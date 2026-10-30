@@ -43,3 +43,36 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     // Categories Management
     Route::resource('categories', CategoryController::class);
 });
+
+// Temporary one-click migration & setup route for cloud deployment without terminal
+Route::get('/app-setup-init', function () {
+    $results = [];
+    try {
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        $results['config_clear'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        $results['route_clear'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        $results['view_clear'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $results['migrate'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $results['seed'] = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Database migrated and seeded successfully! You can now visit your homepage.',
+            'details' => $results
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile() . ':' . $e->getLine(),
+        ], 500);
+    }
+});
