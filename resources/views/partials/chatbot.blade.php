@@ -232,7 +232,7 @@ function auraChatbot() {
             }));
 
             try {
-                const response = await fetch("{{ route('chat.message') }}", {
+                const response = await fetch('/chat/message', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
