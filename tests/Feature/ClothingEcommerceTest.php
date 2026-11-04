@@ -221,4 +221,18 @@ class ClothingEcommerceTest extends TestCase
             'reply' => 'We offer Cash on Delivery across Pakistan and free shipping on orders over Rs. 3,000!',
         ]);
     }
+
+    public function test_reverse_proxy_https_does_not_contain_port_80_in_links()
+    {
+        $response = $this->withHeaders([
+            'X-Forwarded-Proto' => 'https',
+            'X-Forwarded-Port' => '80',
+            'X-Forwarded-Host' => 'aura-clothingg.abasthan.app',
+            'Host' => 'aura-clothingg.abasthan.app',
+        ])->get('/');
+
+        $response->assertStatus(200);
+        $response->assertDontSee(':80');
+        $response->assertSee('https://aura-clothingg.abasthan.app/shop');
+    }
 }
